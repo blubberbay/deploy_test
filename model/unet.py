@@ -4,6 +4,10 @@
 
 # internal
 from .base_model import BaseModel
+from dataloader.dataloader import DataLoader
+
+# external
+import tensorflow as tf
 
 class UNet(BaseModel)
 	"""Unet Model class. Contains functionality for building, training and evaluating the model"""
