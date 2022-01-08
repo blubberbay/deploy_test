@@ -79,10 +79,13 @@ class UNet(BaseModel)
 		
 		self.test_dataset = test.batch(self.batch_size)
 		
-		
+		self._set_training_parameters()
 		
 	def _set_training_parameters(self):
-		pass
+		"""Sets training parameters"""
+        self.train_length = self.info.splits['train'].num_examples
+        self.steps_per_epoch = self.train_length // self.batch_size
+        self.validation_steps = self.info.splits['test'].num_examples // self.batch_size // self.val_subsplits
 		
 	def _normalize(self, input_image, input_mask):
 		""" Normalise input image
@@ -99,7 +102,9 @@ class UNet(BaseModel)
 		input_image = tf.cast(input_image, tf.float32) / 255.0
 		input_mask -= 1
 		return input_image, input_mask
-		
+	
+
+	@tf.function
 	def _load_image_train(self, datapoint):
 		""" Loads and preprocess a single training image """
 		input_image = tf.image.resize(
