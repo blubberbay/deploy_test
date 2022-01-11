@@ -1,9 +1,8 @@
 import tensorflow_datasets as tfds
 
 class DataLoader():
+	"""Data Loader Class"""	
 	
-	def __init__(self):
-
 	@staticmethod
 	def load_data(data_config):
 		""" Loads dataset from path"""

@@ -5,7 +5,7 @@ CFG = {
 		"load_with_info": True
 	},
 	"train": {
-		"batch_size":64,
+		"batch_size": 64,
 		"buffer_size": 1000,
 		"epoches": 20,
 		"val_subsplits": 5,
