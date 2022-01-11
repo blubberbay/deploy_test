@@ -22,8 +22,8 @@ class UNet(BaseModel):
 		
 		self.dataset = None
 		self.info = None
-		self.batch_size = self.config.batch_size
-		self.buffer_size = self.config.buffer_size
+		self.batch_size = self.config.train.batch_size
+		self.buffer_size = self.config.train.buffer_size
 		self.epoches = self.config.train.epoches
 		self.val_subsplits = self.config.train.val_subsplits
 		self.validation_steps = 0

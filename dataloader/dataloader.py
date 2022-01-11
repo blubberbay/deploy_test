@@ -7,4 +7,4 @@ class DataLoader():
 	def load_data(data_config):
 		""" Loads dataset from path"""
 		
-		return tfds.load( data_config.path, with__info=data_config.load_with_info )
+		return tfds.load( data_config.path, with_info=data_config.load_with_info )
