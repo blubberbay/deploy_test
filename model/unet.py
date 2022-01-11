@@ -8,6 +8,7 @@ from dataloader.dataloader import DataLoader
 
 # external
 import tensorflow as tf
+from tensorflow_examples.models.pix2pix import pix2pix
 
 class UNet(BaseModel)
 	"""Unet Model class. Contains functionality for building, training and evaluating the model"""
@@ -16,6 +17,22 @@ class UNet(BaseModel)
 		super().__init__(config)
 		self.base_model = tf.keras.applications.MobileNetV2(
 			input_shape=self.config.model.input, include_top = False)
+		self.model = None
+		self.output_channels = self.config.model.output
+		
+		self.dataset = None
+		self.info = None
+		self.batch_size = self.config.batch_size
+		self.buffer_size = self.config.buffer_size
+		self.epoches = self.config.train.epoches
+		self.val_subsplits = self.config.train.val_subsplits
+		self.validation_steps = 0
+		self.train_length = 0
+		self.steps_per_epoch = 0
+
+		self.image_size = self.config.data.image_size
+		self.train_dataset = []
+		self.test_dataset = []
 			
 	def load_data(self):
 		self.dataset, self.info = DataLoader().load_data(self.config.data )
@@ -32,7 +49,40 @@ class UNet(BaseModel)
 			]
 		layers = [self.base_model.get_layer(name).output for name in layer_names
 		
-		self.model = tf.keras.Model(input = inputs, outputs = x )
+				# Create the feature extraction model
+		down_stack = tf.keras.Model(inputs=self.base_model.input, outputs=layers)
+
+		down_stack.trainable = False
+
+		up_stack = [
+			pix2pix.upsample(self.config.model.up_stack.layer_1, self.config.model.up_stack.kernels),  # 4x4 -> 8x8
+			pix2pix.upsample(self.config.model.up_stack.layer_2, self.config.model.up_stack.kernels),  # 8x8 -> 16x16
+			pix2pix.upsample(self.config.model.up_stack.layer_3, self.config.model.up_stack.kernels),  # 16x16 -> 32x32
+			pix2pix.upsample(self.config.model.up_stack.layer_4, self.config.model.up_stack.kernels),  # 32x32 -> 64x64
+		]
+
+		inputs = tf.keras.layers.Input(shape=self.config.model.input)
+		x = inputs
+
+		# Downsampling through the model
+		skips = down_stack(x)
+		x = skips[-1]
+		skips = reversed(skips[:-1])
+
+		# Upsampling and establishing the skip connections
+		for up, skip in zip(up_stack, skips):
+			x = up(x)
+			concat = tf.keras.layers.Concatenate()
+			x = concat([x, skip])
+
+		# This is the last layer of the model
+		last = tf.keras.layers.Conv2DTranspose(
+			self.output_channels, self.config.model.up_stack.kernels, strides=2,
+			padding='same')  # 64x64 -> 128x128
+
+		x = last(x)
+
+		self.model = tf.keras.Model(inputs=inputs, outputs=x)
 		
 	def train(self):
 		self.model.compile(
@@ -83,9 +133,9 @@ class UNet(BaseModel)
 		
 	def _set_training_parameters(self):
 		"""Sets training parameters"""
-        self.train_length = self.info.splits['train'].num_examples
-        self.steps_per_epoch = self.train_length // self.batch_size
-        self.validation_steps = self.info.splits['test'].num_examples // self.batch_size // self.val_subsplits
+self.train_length = self.info.splits['train'].num_examples
+self.steps_per_epoch = self.train_length // self.batch_size
+self.validation_steps = self.info.splits['test'].num_examples // self.batch_size // self.val_subsplits
 		
 	def _normalize(self, input_image, input_mask):
 		""" Normalise input image
