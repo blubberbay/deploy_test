@@ -9,7 +9,7 @@ CFG = {
 		"buffer_size": 1000,
 		"epoches": 20,
 		"val_subsplits": 5,
-		"optimizer"{ 
+		"optimizer": { 
 			"type": "adam"
 		},
 		"metrics": ["accuracy"]
