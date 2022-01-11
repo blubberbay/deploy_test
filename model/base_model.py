@@ -1,4 +1,4 @@
-from abs import ABC
+from abc import ABC, abstractmethod
 from utils.config import Config
 
 class BaseModel(ABC):
