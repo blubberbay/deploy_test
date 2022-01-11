@@ -10,7 +10,7 @@ from dataloader.dataloader import DataLoader
 import tensorflow as tf
 from tensorflow_examples.models.pix2pix import pix2pix
 
-class UNet(BaseModel)
+class UNet(BaseModel):
 	"""Unet Model class. Contains functionality for building, training and evaluating the model"""
 	
 	def __init__(self, config):
@@ -47,7 +47,7 @@ class UNet(BaseModel)
 			"block_13_expand_relu", #8x8
 			"block_16_project", #4x4
 			]
-		layers = [self.base_model.get_layer(name).output for name in layer_names
+		layers = [self.base_model.get_layer(name).output for name in layer_names]
 		
 				# Create the feature extraction model
 		down_stack = tf.keras.Model(inputs=self.base_model.input, outputs=layers)
@@ -86,7 +86,7 @@ class UNet(BaseModel)
 		
 	def train(self):
 		self.model.compile(
-			optimizer = self.config.train.optimizer.type
+			optimizer = self.config.train.optimizer.type,
 			loss = tf.keras.losses.SparseCategoricalCrossentropy(
 				from_logits = True
 				),
@@ -95,9 +95,9 @@ class UNet(BaseModel)
 			
 		model_history = self.model.fit(
 			self.train_dataset,
-			epochs = self.epcohs
-			steps_per_epoch = self.steps_per_epoch
-			validation_steps = self.validation_steps
+			epochs = self.epcohs,
+			steps_per_epoch = self.steps_per_epoch,
+			validation_steps = self.validation_steps,
 			validation_data = self.validation_data
 		)
 		
@@ -117,11 +117,7 @@ class UNet(BaseModel)
 			num_parallel_calls = tf.data.experimental.AUTOTUNE
 		)
 		
-		self.train_dataset = train
-			.cache()
-			.shuffle(self.buffer_size)
-			.batch(self.batch_size)
-			.repeat()
+		self.train_dataset = train.cache().shuffle(self.buffer_size).batch(self.batch_size).repeat()
 			
 		self.train_dataset = self.train_dataset.prefetch(
 			buffer_size = tf.data.experimental.AUTOTUNE
@@ -133,9 +129,9 @@ class UNet(BaseModel)
 		
 	def _set_training_parameters(self):
 		"""Sets training parameters"""
-self.train_length = self.info.splits['train'].num_examples
-self.steps_per_epoch = self.train_length // self.batch_size
-self.validation_steps = self.info.splits['test'].num_examples // self.batch_size // self.val_subsplits
+		self.train_length = self.info.splits['train'].num_examples
+		self.steps_per_epoch = self.train_length // self.batch_size
+		self.validation_steps = self.info.splits['test'].num_examples // self.batch_size // self.val_subsplits
 		
 	def _normalize(self, input_image, input_mask):
 		""" Normalise input image
